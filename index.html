@@ -29,25 +29,17 @@
     <p id="global-error"></p>
 
     <script>
-        // 1. CONFIGURAÇÕES - VERSÃO FINAL COM SEU PROXY
+        // 1. CONFIGURAÇÕES - VERSÃO FINAL
         const TUYA_CONFIG = {
-            // Seu proxy pessoal da Vercel (já inserido)
             proxyUrl: "https://meu-proxy-cors-bice.vercel.app/", 
-            
-            // Suas chaves de API (já preenchidas corretamente)
             clientId: "ef7rmvspejy9u49vvcvq",
             secret: "e6ee2fe11ab94714b90c7d2dc3ec479a",
             baseUrl: "https://openapi.tuyaus.com",
-
-            // Lista de dispositivos
             devices: [
-                // Seus 4 dispositivos conhecidos (já preenchidos)
                 { id: "eb798cab6fd0612ab95jwc", name: "Sala-T5" },
                 { id: "eb4834395c8fbc4dfefpe9", name: "Sala-T4" },
                 { id: "eb13a02df36c15cc0czqmm", name: "Sala-T3" },
                 { id: "eb08f82b6ddb5a1699dced", name: "Sala-T2" },
-
-                // Placeholders para os 9 novos dispositivos (preencha conforme necessário)
                 { id: "COLE_O_ID_DO_DISPOSITIVO_5_AQUI", name: "Sensor 5" },
                 { id: "COLE_O_ID_DO_DISPOSITIVO_6_AQUI", name: "Sensor 6" },
                 { id: "COLE_O_ID_DO_DISPOSITIVO_7_AQUI", name: "Sensor 7" },
@@ -60,10 +52,8 @@
             ]
         };
         
-        // Intervalo de atualização definido para 5 minutos.
-        const UPDATE_INTERVAL = 300000; 
+        const UPDATE_INTERVAL = 300000; // 5 minutos
 
-        // O restante do código é a lógica do painel e não precisa de alterações.
         async function fetchDeviceStatus(deviceId) {
             const method = "GET";
             const t = Date.now().toString();
@@ -80,7 +70,13 @@
                 'sign_method': 'HMAC-SHA256',
                 'mode': 'cors'
             };
-            const url = TUYA_CONFIG.proxyUrl + TUYA_CONFIG.baseUrl + path;
+
+            // ===== A CORREÇÃO ESTÁ AQUI =====
+            // Removemos o "https://" do baseUrl antes de o juntar com o proxyUrl.
+            const targetUrl = TUYA_CONFIG.baseUrl.replace(/^https?:\/\//, '') + path;
+            const url = TUYA_CONFIG.proxyUrl + targetUrl;
+            // =================================
+
             try {
                 const response = await fetch(url, { method, headers });
                 const data = await response.json();
@@ -93,6 +89,7 @@
                 return { success: false, msg: error.message };
             }
         }
+
         function updateDeviceCard(device, data) {
             const safeName = device.name.replace(/\s+/g, '-');
             const tempElement = document.getElementById(`temp-${safeName}`);
@@ -116,6 +113,7 @@
                 document.getElementById('global-error').textContent = `Erro: ${data.msg || 'Falha na comunicação'}`;
             }
         }
+
         function initializeDashboard() {
             const container = document.getElementById('device-container');
             TUYA_CONFIG.devices.forEach(device => {
