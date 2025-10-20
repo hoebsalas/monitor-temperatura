@@ -14,7 +14,9 @@
         .card h2 { margin-top: 0; color: #05386b; font-size: 1.5em; }
         .data { display: flex; justify-content: space-around; align-items: center; margin: 20px 0; font-size: 2em; color: #333; }
         .data span { font-size: 0.5em; color: #666; vertical-align: super; }
-        .status { padding: 10px; border-radius: 5px; color: white; font-weight: bold; }
+        /* NOVO ESTILO PARA A BATERIA */
+        .battery-level { font-size: 1em; color: #555; margin-top: 15px; }
+        .status { margin-top: 15px; padding: 10px; border-radius: 5px; color: white; font-weight: bold; }
         .status.ok { background-color: #4CAF50; }
         .status.error { background-color: #f44336; }
         .status.loading { background-color: #ff9800; }
@@ -22,40 +24,32 @@
     </style>
 </head>
 <body>
-
-    <h1>TESTE DE ATUALIZAÇÃO - VERSÃO FINAL</h1>
-    <div class="container" id="device-container">
-        </div>
+    <h1>Painel de Monitoramento</h1>
+    <div class="container" id="device-container"></div>
     <p id="global-error"></p>
-
     <script>
-        // 1. CONFIGURAÇÕES - VERSÃO FINAL COM NOVAS CHAVES
         const TUYA_CONFIG = {
             proxyUrl: "https://meu-proxy-cors-bice.vercel.app/", 
-            clientId: "8y9cawst5km45canysuq", // SEU NOVO CLIENT ID
-            secret: "2cabe1ab28674f1f9b10376baf22e94f", // SEU NOVO CLIENT SECRET
+            clientId: "8y9cawst5km45canysuq",
+            secret: "2cabe1ab28674f1f9b10376baf22e94f",
             baseUrl: "https://openapi.tuyaus.com",
             devices: [
-                // Seus dispositivos
                 { id: "eb798cab6fd0612ab95jwc", name: "Sala-T5" },
                 { id: "eb4834395c8fbc4dfefpe9", name: "Sala-T4" },
                 { id: "eb13a02df36c15cc0czqmm", name: "Sala-T3" },
                 { id: "eb08f82b6ddb5a1699dced", name: "Sala-T2" },
-
-                // Placeholders para os outros dispositivos (preencha os IDs se os tiver)
-                { id: "COLE_O_ID_DO_DISPOSITIVO_5_AQUI", name: "Sensor 5" },
-                { id: "COLE_O_ID_DO_DISPOSITIVO_6_AQUI", name: "Sensor 6" },
-                { id: "COLE_O_ID_DO_DISPOSITIVO_7_AQUI", name: "Sensor 7" },
-                { id: "COLE_O_ID_DO_DISPOSITIVO_8_AQUI", name: "Sensor 8" },
-                { id: "COLE_O_ID_DO_DISPOSITIVO_9_AQUI", name: "Sensor 9" },
-                { id: "COLE_O_ID_DO_DISPOSITIVO_10_AQUI", name: "Sensor 10" },
-                { id: "COLE_O_ID_DO_DISPOSITIVO_11_AQUI", name: "Sensor 11" },
-                { id: "COLE_O_ID_DO_DISPOSITIVO_12_AQUI", name: "Sensor 12" },
-                { id: "COLE_O_ID_DO_DISPOSITIVO_13_AQUI", name: "Sensor 13" },
+                { id: "COLE_O_ID_5_AQUI", name: "Sensor 5" },
+                { id: "COLE_O_ID_6_AQUI", name: "Sensor 6" },
+                { id: "COLE_O_ID_7_AQUI", name: "Sensor 7" },
+                { id: "COLE_O_ID_8_AQUI", name: "Sensor 8" },
+                { id: "COLE_O_ID_9_AQUI", name: "Sensor 9" },
+                { id: "COLE_O_ID_10_AQUI", name: "Sensor 10" },
+                { id: "COLE_O_ID_11_AQUI", name: "Sensor 11" },
+                { id: "COLE_O_ID_12_AQUI", name: "Sensor 12" },
+                { id: "COLE_O_ID_13_AQUI", name: "Sensor 13" },
             ]
         };
-        
-        const UPDATE_INTERVAL = 300000; // 5 minutos
+        const UPDATE_INTERVAL = 300000;
 
         async function fetchDeviceStatus(deviceId) {
             const method = "GET";
@@ -67,22 +61,14 @@
             const sign = CryptoJS.HmacSHA256(stringToSign, TUYA_CONFIG.secret).toString(CryptoJS.enc.Hex).toUpperCase();
             
             const headers = {
-                'client_id': TUYA_CONFIG.clientId,
-                'sign': sign,
-                't': t,
-                'sign_method': 'HMAC-SHA256',
-                'mode': 'cors'
+                'client_id': TUYA_CONFIG.clientId, 'sign': sign, 't': t, 'sign_method': 'HMAC-SHA256', 'mode': 'cors'
             };
-
             const targetUrl = TUYA_CONFIG.baseUrl.replace(/^https?:\/\//, '') + path;
             const url = TUYA_CONFIG.proxyUrl + targetUrl;
-
             try {
                 const response = await fetch(url, { method, headers });
                 const data = await response.json();
-                if (!response.ok || !data.success) {
-                    throw new Error(data.msg || `HTTP error ${response.status}`);
-                }
+                if (!response.ok || !data.success) { throw new Error(data.msg || `HTTP error ${response.status}`); }
                 return data;
             } catch (error) {
                 console.error(`Erro ao buscar dados para ${deviceId}:`, error);
@@ -95,51 +81,21 @@
             const tempElement = document.getElementById(`temp-${safeName}`);
             const humidityElement = document.getElementById(`humidity-${safeName}`);
             const statusElement = document.getElementById(`status-${safeName}`);
+            // NOVA LINHA PARA PEGAR O ELEMENTO DA BATERIA
+            const batteryElement = document.getElementById(`battery-${safeName}`);
+
             if (data && data.success) {
-                const tempItem = data.result.find(item => item.code === 'va_temperature');
-                const humidityItem = data.result.find(item => item.code === 'va_humidity');
+                const tempItem = data.result.find(item => item.code === 'temp_current' || item.code === 'va_temperature');
+                const humidityItem = data.result.find(item => item.code === 'humidity_value' || item.code === 'va_humidity');
+                // NOVA LINHA PARA PROCURAR O DADO DA BATERIA
+                const batteryItem = data.result.find(item => item.code === 'battery_percentage');
+                
                 const temperatura = tempItem ? (tempItem.value / 10).toFixed(1) : '--';
                 const umidade = humidityItem ? (humidityItem.value).toFixed(0) : '--';
+                // NOVA LINHA PARA PEGAR O VALOR DA BATERIA
+                const bateria = batteryItem ? batteryItem.value : '--';
+
                 tempElement.innerHTML = `${temperatura}<span>°C</span>`;
                 humidityElement.innerHTML = `${umidade}<span>%</span>`;
-                statusElement.textContent = 'Status: OK';
-                statusElement.className = 'status ok';
-                document.getElementById('global-error').textContent = '';
-            } else {
-                tempElement.innerHTML = `--<span>°C</span>`;
-                humidityElement.innerHTML = `--<span>%</span>`;
-                statusElement.textContent = 'Status: Erro';
-                statusElement.className = 'status error';
-                document.getElementById('global-error').textContent = `Erro: ${data.msg || 'Falha na comunicação'}`;
-            }
-        }
-
-        function initializeDashboard() {
-            const container = document.getElementById('device-container');
-            TUYA_CONFIG.devices.forEach(device => {
-                const safeName = device.name.replace(/\s+/g, '-');
-                container.innerHTML += `
-                    <div class="card" id="card-${safeName}">
-                        <h2>${device.name}</h2>
-                        <div class="data">
-                            <div id="temp-${safeName}">--<span>°C</span></div>
-                            <div id="humidity-${safeName}">--<span>%</span></div>
-                        </div>
-                        <div class="status loading" id="status-${safeName}">A carregar...</div>
-                    </div>
-                `;
-            });
-            const updateAllPanels = async () => {
-                console.log("A atualizar dados...");
-                for (const device of TUYA_CONFIG.devices) {
-                    const data = await fetchDeviceStatus(device.id);
-                    updateDeviceCard(device, data);
-                }
-            };
-            updateAllPanels();
-            setInterval(updateAllPanels, UPDATE_INTERVAL);
-        }
-        document.addEventListener('DOMContentLoaded', initializeDashboard);
-    </script>
-</body>
-</html>
+                // NOVA LINHA PARA ATUALIZAR O HTML DA BATERIA
+                batteryElement.innerHTML = `🔋
