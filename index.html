@@ -22,15 +22,12 @@
     </style>
 </head>
 <body>
-    <h1>Painel de Monitoramento (Versão Backend)</h1>
+    <h1>Painel de Monitoramento (Versão Final)</h1>
     <div class="container" id="device-container"></div>
     <p id="global-error"></p>
     <script>
-        // CONFIGURAÇÃO SIMPLIFICADA - SEM CHAVES SECRETAS!
         const CONFIG = {
-            // O URL para o nosso backend na Vercel
             backendUrl: "https://meu-proxy-cors-bice.vercel.app/api/proxy",
-
             devices: [
                 { id: "eb798cab6fd0612ab95jwc", name: "Sala-T5" },
                 { id: "eb4834395c8fbc4dfefpe9", name: "Sala-T4" },
@@ -47,13 +44,10 @@
                 { id: "COLE_O_ID_13_AQUI", name: "Sensor 13" },
             ]
         };
-        const UPDATE_INTERVAL = 300000; // 5 minutos
+        const UPDATE_INTERVAL = 300000;
 
-        // A FUNÇÃO FETCH FICOU MUITO MAIS SIMPLES
-        // Ela não sabe mais o que é Tuya. Ela só pede os dados ao nosso backend.
         async function fetchDeviceStatus(deviceId) {
             const url = `${CONFIG.backendUrl}?id=${deviceId}`;
-
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -65,7 +59,6 @@
             }
         }
 
-        // O resto do código para mostrar os dados continua igual
         function updateDeviceCard(device, data) {
             const safeName = device.name.replace(/\s+/g, '-');
             const tempElement = document.getElementById(`temp-${safeName}`);
@@ -73,10 +66,12 @@
             const statusElement = document.getElementById(`status-${safeName}`);
             const batteryElement = document.getElementById(`battery-${safeName}`);
 
-            if (data && data.success) {
-                const tempItem = data.result.find(item => item.code === 'temp_current' || item.code === 'va_temperature');
-                const humidityItem = data.result.find(item => item.code === 'humidity_value' || item.code === 'va_humidity');
-                const batteryItem = data.result.find(item => item.code === 'battery_percentage');
+            // A única correção aqui foi para ler a resposta da API v2.0
+            const properties = data.result?.properties;
+            if (data && data.success && properties) {
+                const tempItem = properties.find(item => item.code === 'temp_current');
+                const humidityItem = properties.find(item => item.code === 'humidity_value');
+                const batteryItem = properties.find(item => item.code === 'battery_percentage');
 
                 const temperatura = tempItem ? (tempItem.value / 10).toFixed(1) : '--';
                 const umidade = humidityItem ? (humidityItem.value).toFixed(0) : '--';
