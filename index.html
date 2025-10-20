@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Monitoramento de Temperatura</title>
+    <title>Painel de Monitoramento Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
@@ -29,17 +29,20 @@
     <p id="global-error"></p>
 
     <script>
-        // 1. CONFIGURAÇÕES - VERSÃO FINAL E VERIFICADA
+        // 1. CONFIGURAÇÕES - VERSÃO FINAL COM NOVAS CHAVES
         const TUYA_CONFIG = {
             proxyUrl: "https://meu-proxy-cors-bice.vercel.app/", 
-            clientId: "ef7rmvspejy9u49vvcvq",
-            secret: "e6ee2fe11ab94714b90c7d2dc3ec479a",
+            clientId: "8y9cawst5km45canysuq", // SEU NOVO CLIENT ID
+            secret: "2cabe1ab28674f1f9b10376baf22e94f", // SEU NOVO CLIENT SECRET
             baseUrl: "https://openapi.tuyaus.com",
             devices: [
+                // Seus dispositivos
                 { id: "eb798cab6fd0612ab95jwc", name: "Sala-T5" },
                 { id: "eb4834395c8fbc4dfefpe9", name: "Sala-T4" },
                 { id: "eb13a02df36c15cc0czqmm", name: "Sala-T3" },
                 { id: "eb08f82b6ddb5a1699dced", name: "Sala-T2" },
+
+                // Placeholders para os outros dispositivos (preencha os IDs se os tiver)
                 { id: "COLE_O_ID_DO_DISPOSITIVO_5_AQUI", name: "Sensor 5" },
                 { id: "COLE_O_ID_DO_DISPOSITIVO_6_AQUI", name: "Sensor 6" },
                 { id: "COLE_O_ID_DO_DISPOSITIVO_7_AQUI", name: "Sensor 7" },
